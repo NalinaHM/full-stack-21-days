@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Grade Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #4e54c8, #8f94fb);
+    }
+
+    .container {
+      background: #ffffff;
+      width: 100%;
+      max-width: 480px;
+      padding: 24px 28px;
+      border-radius: 12px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 24px;
+      text-align: center;
+      color: #222;
+    }
+
+    .subtitle {
+      margin: 0 0 20px;
+      font-size: 13px;
+      text-align: center;
+      color: #666;
+    }
+
+    .field-group {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input[type="number"],
+    input[type="text"] {
+      width: 100%;
+      padding: 9px 10px;
+      font-size: 13px;
+      border-radius: 6px;
+      border: 1px solid #d0d0d0;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input[type="number"]:focus,
+    input[type="text"]:focus {
+      border-color: #4e54c8;
+      box-shadow: 0 0 0 2px rgba(78, 84, 200, 0.2);
+    }
+
+    .subjects {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 14px;
+      margin-bottom: 8px;
+    }
+
+    .subject-item label {
+      font-size: 12px;
+      margin-bottom: 3px;
+    }
+
+    .note {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 14px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    button {
+      flex: 1;
+      padding: 9px 0;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.15s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4e54c8, #8f94fb);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(78, 84, 200, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 28px rgba(78, 84, 200, 0.55);
+    }
+
+    .btn-secondary {
+      background: #f1f1f5;
+      color: #444;
+    }
+
+    .btn-secondary:hover {
+      background: #e6e6f0;
+    }
+
+    .result-card {
+      border-radius: 10px;
+      border: 1px solid #ececf5;
+      padding: 12px 14px;
+      background: #fafafe;
+      display: none;
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .result-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: #222;
+    }
+
+    .grade-badge {
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .grade-a {
+      background: #e7f9ed;
+      color: #1b7a3c;
+    }
+
+    .grade-b {
+      background: #e7f3ff;
+      color: #2059b5;
+    }
+
+    .grade-c {
+      background: #fff7e6;
+      color: #9a6b12;
+    }
+
+    .grade-d {
+      background: #ffecec;
+      color: #c03a3a;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .stats span {
+      font-weight: 600;
+      color: #222;
+    }
+
+    .status {
+      margin-top: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-pass {
+      color: #1b7a3c;
+    }
+
+    .status-fail {
+      color: #c03a3a;
+    }
+
+    .error {
+      color: #c0392b;
+      font-size: 12px;
+      margin-bottom: 8px;
+      display: none;
+    }
+
+    @media (max-width: 520px) {
+      .container {
+        border-radius: 0;
+        min-height: 100vh;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Student Grade Calculator</h1>
+    <p class="subtitle">Enter marks to calculate total, percentage and grade.</p>
+
+    <div class="field-group">
+      <label for="studentName">Student Name (optional)</label>
+      <input type="text" id="studentName" placeholder="e.g., John Doe" />
+    </div>
+
+    <div class="field-group">
+      <label>Marks in Subjects</label>
+      <div class="subjects">
+        <div class="subject-item">
+          <label for="sub1">Subject 1</label>
+          <input type="number" id="sub1" min="0" max="100" placeholder="0 - 100" />
+        </div>
+        <div class="subject-item">
+          <label for="sub2">Subject 2</label>
+          <input type="number" id="sub2" min="0" max="100" placeholder="0 - 100" />
+        </div>
+        <div class="subject-item">
+          <label for="sub3">Subject 3</label>
+          <input type="number" id="sub3" min="0" max="100" placeholder="0 - 100" />
+        </div>
+        <div class="subject-item">
+          <label for="sub4">Subject 4</label>
+          <input type="number" id="sub4" min="0" max="100" placeholder="0 - 100" />
+        </div>
+        <div class="subject-item">
+          <label for="sub5">Subject 5</label>
+          <input type="number" id="sub5" min="0" max="100" placeholder="0 - 100" />
+        </div>
+        <div class="subject-item">
+          <label for="sub6">Subject 6</label>
+          <input type="number" id="sub6" min="0" max="100" placeholder="0 - 100" />
+        </div>
+      </div>
+      <p class="note">Leave any subject blank if not applicable. Max marks per subject: 100.</p>
+    </div>
+
+    <p id="error" class="error"></p>
+
+    <div class="actions">
+      <button class="btn-primary" id="calculateBtn">Calculate</button>
+      <button class="btn-secondary" id="resetBtn" type="button">Reset</button>
+    </div>
+
+    <div id="resultCard" class="result-card">
+      <div class="result-header">
+        <div class="result-title" id="resultTitle">Result</div>
+        <div id="gradeBadge" class="grade-badge">Grade</div>
+      </div>
+
+      <div class="stats">
+        <div>Total Marks: <span id="totalMarks">0</span></div>
+        <div>Out of: <span id="outOf">0</span></div>
+      </div>
+
+      <div class="stats">
+        <div>Percentage: <span id="percentage">0%</span></div>
+        <div>Subjects Counted: <span id="subjectCount">0</span></div>
+      </div>
+
+      <div id="statusText" class="status"></div>
+    </div>
+  </div>
+
+  <script>
+    const inputs = [
+      document.getElementById("sub1"),
+      document.getElementById("sub2"),
+      document.getElementById("sub3"),
+      document.getElementById("sub4"),
+      document.getElementById("sub5"),
+      document.getElementById("sub6"),
+    ];
+
+    const errorEl = document.getElementById("error");
+    const resultCard = document.getElementById("resultCard");
+    const totalMarksEl = document.getElementById("totalMarks");
+    const outOfEl = document.getElementById("outOf");
+    const percentageEl = document.getElementById("percentage");
+    const subjectCountEl = document.getElementById("subjectCount");
+    const gradeBadge = document.getElementById("gradeBadge");
+    const statusText = document.getElementById("statusText");
+    const resultTitle = document.getElementById("resultTitle");
+    const studentNameInput = document.getElementById("studentName");
+
+    document.getElementById("calculateBtn").addEventListener("click", () => {
+      errorEl.style.display = "none";
+      resultCard.style.display = "none";
+
+      // Gather valid marks
+      let marks = [];
+      for (let input of inputs) {
+        const value = input.value.trim();
+        if (value === "") continue; // skip empty subjects
+
+        const num = Number(value);
+        if (Number.isNaN(num)) {
+          showError("Please enter only numeric values for marks.");
+          return;
+        }
+        if (num < 0 || num > 100) {
+          showError("Marks must be between 0 and 100.");
+          return;
+        }
+        marks.push(num);
+      }
+
+      if (marks.length === 0) {
+        showError("Enter marks for at least one subject.");
+        return;
+      }
+
+      const total = marks.reduce((sum, m) => sum + m, 0);
+      const outOf = marks.length * 100;
+      const percentage = (total / outOf) * 100;
+
+      const { grade, gradeClass, message, passed } = getGradeInfo(percentage);
+
+      totalMarksEl.textContent = total.toFixed(0);
+      outOfEl.textContent = outOf.toFixed(0);
+      percentageEl.textContent = percentage.toFixed(2) + "%";
+      subjectCountEl.textContent = marks.length.toString();
+
+      // Grade badge
+      gradeBadge.textContent = grade;
+      gradeBadge.className = "grade-badge " + gradeClass;
+
+      // Name in title
+      const name = studentNameInput.value.trim();
+      resultTitle.textContent = name ? `Result for ${name}` : "Result";
+
+      statusText.textContent = message;
+      statusText.className = "status " + (passed ? "status-pass" : "status-fail");
+
+      resultCard.style.display = "block";
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      studentNameInput.value = "";
+      inputs.forEach((input) => (input.value = ""));
+      errorEl.style.display = "none";
+      resultCard.style.display = "none";
+    });
+
+    function showError(message) {
+      errorEl.textContent = message;
+      errorEl.style.display = "block";
+    }
+
+    function getGradeInfo(percentage) {
+      // Simple grading logic – adjust thresholds as you like
+      if (percentage >= 90) {
+        return {
+          grade: "A+",
+          gradeClass: "grade-a",
+          message: "Excellent performance! Keep it up.",
+          passed: true,
+        };
+      } else if (percentage >= 80) {
+        return {
+          grade: "A",
+          gradeClass: "grade-a",
+          message: "Great job! Very good performance.",
+          passed: true,
+        };
+      } else if (percentage >= 70) {
+        return {
+          grade: "B",
+          gradeClass: "grade-b",
+          message: "Good work! You can aim even higher.",
+          passed: true,
+        };
+      } else if (percentage >= 60) {
+        return {
+          grade: "C",
+          gradeClass: "grade-c",
+          message: "Fair result. Try to improve further.",
+          passed: true,
+        };
+      } else if (percentage >= 50) {
+        return {
+          grade: "D",
+          gradeClass: "grade-d",
+          message: "You passed, but you should work harder.",
+          passed: true,
+        };
+      } else {
+        return {
+          grade: "F",
+          gradeClass: "grade-d",
+          message: "You did not pass. Don't give up—study and try again.",
+          passed: false,
+        };
+      }
+    }
+  </script>
+</body>
+</html>
