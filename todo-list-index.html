@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>To‑Do List</title>
+  <link rel="stylesheet" href="todo-app-style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-root">
+    <header class="app-header">
+      <h1 class="app-title">To‑Do</h1>
+      <p class="app-subtitle">Stay organized and focused.</p>
+    </header>
+
+    <main class="app-main">
+      <section class="card">
+        <form class="todo-form" id="todo-form">
+          <div class="input-group">
+            <input
+              id="todo-input"
+              class="input"
+              type="text"
+              placeholder="What do you need to get done?"
+              autocomplete="off"
+              required
+            />
+            <button type="submit" class="btn primary">Add</button>
+          </div>
+        </form>
+
+        <div class="toolbar">
+          <div class="filters" id="filters">
+            <button class="chip active" data-filter="all">All</button>
+            <button class="chip" data-filter="active">Active</button>
+            <button class="chip" data-filter="completed">Completed</button>
+          </div>
+          <button class="link-button" id="clear-completed">Clear completed</button>
+        </div>
+
+        <ul class="todo-list" id="todo-list">
+          <!-- Items injected by JS -->
+        </ul>
+
+        <footer class="card-footer">
+          <span id="items-left">0 items left</span>
+        </footer>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <span>Tasks are saved in this browser.</span>
+    </footer>
+  </div>
+
+  <script src="todo-app-script.js"></script>
+</body>
+</html>
