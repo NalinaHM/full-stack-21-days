@@ -1,19 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Day 3 Responsive demo</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Student Score Manager</title>
+  <link rel="stylesheet" href="student-score-manager.css" />
 </head>
 <body>
-<h1>Responsive layout demo</h1>
-<div class="container">
-    <div class="card">HTML</div>
-    <div class="card">CSS</div>
-    <div class="card">JAVAScript</div>
-    <div class="card">React</div>
-    <div class="card">Node</div>
-    <div class="card">MongoDB</div>
-</div>
+  <div class="app">
+    <h1>Student Score Manager</h1>
+
+    <form id="student-form">
+      <input id="name" type="text" placeholder="Student name" required />
+      <input id="score" type="number" placeholder="Score (0–100)" min="0" max="100" required />
+      <button type="submit">Add / Update</button>
+    </form>
+
+    <div class="controls">
+      <button id="show-all">Show All</button>
+      <button id="show-pass">Show Passing (≥ 40)</button>
+      <button id="show-fail">Show Failing (&lt; 40)</button>
+    </div>
+
+    <div class="summary">
+      <span id="count"></span>
+      <span id="average"></span>
+      <span id="highest"></span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Score</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="student-table-body"></tbody>
+    </table>
+  </div>
+
+  <script src="student-score-manager.js"></script>
 </body>
 </html>

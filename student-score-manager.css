@@ -1,0 +1,88 @@
+body {
+  font-family: system-ui, sans-serif;
+  background: #f5f7fb;
+  margin: 0;
+}
+
+.app {
+  max-width: 800px;
+  margin: 40px auto;
+  background: white;
+  padding: 24px 28px;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+  margin-top: 0;
+  text-align: center;
+}
+
+form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+form input {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #d0d5dd;
+}
+
+form button,
+.controls button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+form button:hover,
+.controls button:hover {
+  background: #1d4ed8;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.summary {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+th,
+td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+.status-pass {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.status-fail {
+  color: #dc2626;
+  font-weight: 600;
+}
