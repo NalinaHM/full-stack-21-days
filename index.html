@@ -2,44 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Student Score Manager</title>
-  <link rel="stylesheet" href="student-score-manager.css" />
+  <title>Random User Generator</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="app">
-    <h1>Student Score Manager</h1>
+  <div class="container">
+    <h1>Random User Generator</h1>
 
-    <form id="student-form">
-      <input id="name" type="text" placeholder="Student name" required />
-      <input id="score" type="number" placeholder="Score (0–100)" min="0" max="100" required />
-      <button type="submit">Add / Update</button>
-    </form>
-
-    <div class="controls">
-      <button id="show-all">Show All</button>
-      <button id="show-pass">Show Passing (≥ 40)</button>
-      <button id="show-fail">Show Failing (&lt; 40)</button>
+    <div id="user-card" class="card">
+      <img id="user-avatar" src="" alt="User avatar" />
+      <h2 id="user-name"></h2>
+      <p id="user-email"></p>
+      <p id="user-location"></p>
     </div>
 
-    <div class="summary">
-      <span id="count"></span>
-      <span id="average"></span>
-      <span id="highest"></span>
-    </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Name</th>
-          <th>Score</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="student-table-body"></tbody>
-    </table>
+    <button id="generate-btn">Get Random User</button>
+    <p id="status"></p>
   </div>
 
-  <script src="student-score-manager.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
