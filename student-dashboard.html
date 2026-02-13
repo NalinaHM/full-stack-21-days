@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Analytics Dashboard</title>
+  <link rel="stylesheet" href="student-dashboard.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-root">
+    <header class="app-header">
+      <h1 class="app-title">Student Analytics Dashboard</h1>
+      <p class="app-subtitle">Manage students and explore their performance.</p>
+    </header>
+
+    <main class="app-main">
+      <section class="card">
+        <h2 class="section-title">Add Student</h2>
+        <form id="student-form" class="student-form">
+          <div class="input-row">
+            <div class="field">
+              <label for="student-name">Name</label>
+              <input
+                id="student-name"
+                type="text"
+                class="input"
+                placeholder="Enter student name"
+                autocomplete="off"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="student-marks">Marks</label>
+              <input
+                id="student-marks"
+                type="number"
+                class="input"
+                placeholder="0 - 100"
+                min="0"
+                max="100"
+                step="1"
+                required
+              />
+            </div>
+            <button type="submit" class="btn primary">Add</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h2 class="section-title">Students</h2>
+          <div class="toolbar">
+            <button id="sort-marks" class="btn ghost">Sort by Marks ↓</button>
+            <button id="clear-all" class="btn danger ghost">Clear All</button>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Marks</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="students-body">
+              <!-- Rows injected by JS -->
+            </tbody>
+          </table>
+          <p id="empty-state" class="empty-state">No students yet. Add some to see analytics.</p>
+        </div>
+      </section>
+
+      <section class="card analytics-card">
+        <h2 class="section-title">Analytics</h2>
+        <div class="analytics-grid">
+          <div class="metric">
+            <span class="metric-label">Total Students</span>
+            <span class="metric-value" id="metric-count">0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Average Marks</span>
+            <span class="metric-value" id="metric-average">–</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Topper</span>
+            <span class="metric-value" id="metric-topper">–</span>
+            <span class="metric-sub" id="metric-topper-marks"></span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">All Passed?</span>
+            <span class="metric-value" id="metric-pass-status">–</span>
+            <span class="metric-sub" id="metric-pass-note"></span>
+          </div>
+        </div>
+        <p class="note">Passing mark is set to 40 by default.</p>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <span>Students are stored in this browser using localStorage.</span>
+    </footer>
+  </div>
+
+  <script src="student-dashboard.js"></script>
+</body>
+</html>
