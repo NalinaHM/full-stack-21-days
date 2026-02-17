@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>this Keyword Demo</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0f172a;
+      color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      margin: 32px;
+      padding: 24px;
+      max-width: 800px;
+      width: 100%;
+      background: #020617;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.9);
+      border: 1px solid #1f2937;
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 1.8rem;
+      color: #f9fafb;
+    }
+
+    h2 {
+      margin-top: 24px;
+      margin-bottom: 8px;
+      font-size: 1.2rem;
+      color: #e5e7eb;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    button {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid #22c55e40;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #022c22;
+      font-weight: 600;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .log {
+      margin: 0;
+      padding: 12px 14px;
+      min-height: 180px;
+      max-height: 320px;
+      overflow-y: auto;
+      background: #020617;
+      border-radius: 12px;
+      border: 1px solid #1f2937;
+      font-family: "Fira Code", Menlo, Monaco, Consolas, monospace;
+      font-size: 0.88rem;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>`this` Keyword Demo</h1>
+
+    <div class="buttons">
+      <button id="btn-method">1) Call object method</button>
+      <button id="btn-listener-normal">2) Normal listener</button>
+      <button id="btn-without-bind">3) Callback without bind()</button>
+      <button id="btn-with-bind">4) Callback with bind()</button>
+      <button id="btn-arrow-vs-normal">5) Arrow vs normal</button>
+    </div>
+
+    <h2>Log</h2>
+    <pre id="log" class="log"></pre>
+  </div>
+
+  <script>
+    const logEl = document.getElementById("log");
+
+    function log(msg) {
+      logEl.textContent += msg + "\n";
+    }
+
+    // Smart User Profile Manager object
+    const userProfileManager = {
+      name: "Nalina",
+      age: 22,
+
+      // 1) this inside object method
+      showProfile() {
+        log("showProfile() -> this.name: " + this.name);
+        log("showProfile() -> this.age:  " + this.age);
+      },
+
+      // method used as callback to demonstrate bind
+      showName() {
+        log("showName() -> this === userProfileManager ? " + (this === userProfileManager));
+        log("showName() -> this.name: " + (this && this.name));
+      },
+
+      init() {
+        // 1) this inside object method (via arrow keeps lexical this)
+        document
+          .getElementById("btn-method")
+          .addEventListener("click", () => this.showProfileFromButton());
+
+        // 2) this inside event listener (normal function)
+        document
+          .getElementById("btn-listener-normal")
+          .addEventListener("click", function () {
+            log("--- 2) Normal function event listener ---");
+            log("Normal listener -> this is: " + this.tagName + "#" + this.id);
+            log("");
+          });
+
+        // 3) Problem without bind()
+        document
+          .getElementById("btn-without-bind")
+          .addEventListener("click", this.showName);
+
+        // 4) Fix using bind()
+        document
+          .getElementById("btn-with-bind")
+          .addEventListener("click", this.showName.bind(this));
+
+        // 5) Arrow vs normal function
+        document
+          .getElementById("btn-arrow-vs-normal")
+          .addEventListener("click", this.compareArrowAndNormal.bind(this));
+      },
+
+      showProfileFromButton() {
+        log("--- 1) Object method call ---");
+        this.showProfile();
+        log("");
+      },
+
+      compareArrowAndNormal() {
+        log("--- 5) Arrow vs Normal (click the temporary button) ---");
+
+        const tempButton = document.createElement("button");
+        tempButton.textContent = "Temporary Button (for demo)";
+        document.body.appendChild(tempButton);
+
+        // normal function listener
+        tempButton.addEventListener("click", function () {
+          log("[Normal] this === tempButton ? " + (this === tempButton));
+        });
+
+        // arrow function listener
+        tempButton.addEventListener("click", () => {
+          log("[Arrow] this === userProfileManager ? " + (this === userProfileManager));
+        });
+
+        log("");
+      }
+    };
+
+    // initialize manager after DOM is ready
+    userProfileManager.init();
+  </script>
+</body>
+</html>
