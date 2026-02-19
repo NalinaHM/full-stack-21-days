@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JavaScript Execution Visualizer</title>
+
+  <!-- All CSS inline so this is a fully self-contained single file -->
+  <style>
+    :root {
+      --bg: #050816;
+      --bg-elevated: #0b1020;
+      --bg-soft: #101632;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --accent: #6366f1;
+      --accent-soft: rgba(99, 102, 241, 0.12);
+      --accent-strong: rgba(99, 102, 241, 0.3);
+      --accent-text: #e0e7ff;
+      --danger: #f97373;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --code-bg: #020617;
+      --code-border: rgba(148, 163, 184, 0.35);
+      --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.8);
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-pill: 999px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1e293b 0, #020617 42%, #020617 100%);
+      color: var(--text-main);
+    }
+
+    .app {
+      max-width: 1120px;
+      margin: 24px auto 40px;
+      padding: 20px 20px 28px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(15, 23, 42, 0.98));
+      border-radius: 28px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(18px);
+    }
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .app-header h1 {
+      font-size: 1.55rem;
+      margin: 0 0 4px;
+      letter-spacing: 0.03em;
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .scenario-select {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.8rem;
+    }
+
+    .scenario-select label {
+      color: var(--text-muted);
+    }
+
+    #scenario {
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.12), #020617 65%);
+      color: var(--text-main);
+      padding: 7px 14px;
+      font-size: 0.8rem;
+      outline: none;
+      min-width: 220px;
+    }
+
+    #scenario:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.8);
+    }
+
+    .app-main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr);
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      background: radial-gradient(circle at 0 0, rgba(30, 64, 175, 0.22), #020617 60%);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(30, 64, 175, 0.55);
+      box-shadow: 0 12px 35px rgba(15, 23, 42, 0.85);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 10px 14px 8px;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.9);
+      background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.15), transparent 60%);
+    }
+
+    .panel-header h2 {
+      margin: 0;
+      font-size: 0.9rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(226, 232, 240, 0.88);
+    }
+
+    .code-block {
+      margin: 0;
+      padding: 14px 16px 16px;
+      font-family: "JetBrains Mono", "Fira Code", ui-monospace, Menlo, Consolas, monospace;
+      font-size: 0.82rem;
+      background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 0.9), #020617 70%);
+      color: #e5e7eb;
+      border-top: 1px solid rgba(30, 64, 175, 0.35);
+      overflow: auto;
+      max-height: 460px;
+    }
+
+    .code-line {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 1px 6px;
+      border-radius: 7px;
+      transition: background-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .code-line-number {
+      width: 24px;
+      text-align: right;
+      color: rgba(148, 163, 184, 0.7);
+      user-select: none;
+    }
+
+    .code-line-text {
+      white-space: pre;
+      flex: 1;
+    }
+
+    .code-line.highlight-primary {
+      background: linear-gradient(90deg, rgba(79, 70, 229, 0.42), rgba(15, 23, 42, 0.9));
+      box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.82);
+    }
+
+    .code-line.highlight-secondary {
+      background: linear-gradient(90deg, rgba(56, 189, 248, 0.22), transparent 80%);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.65);
+    }
+
+    .state-panel .state-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      padding: 10px 10px 12px;
+    }
+
+    .state-card {
+      background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 0.92), #020617 70%);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(148, 163, 184, 0.36);
+      display: flex;
+      flex-direction: column;
+      min-height: 120px;
+    }
+
+    .state-card h3 {
+      margin: 6px 10px 4px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: rgba(209, 213, 219, 0.86);
+    }
+
+    .state-body {
+      flex: 1;
+      padding: 6px 10px 9px;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      overflow-y: auto;
+    }
+
+    .state-kv {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 2px 0;
+    }
+
+    .state-k {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+        "Courier New", monospace;
+      color: rgba(148, 163, 184, 0.9);
+    }
+
+    .state-v {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+        "Courier New", monospace;
+      color: #e5e7eb;
+    }
+
+    .empty-placeholder {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      opacity: 0.85;
+    }
+
+    .stack-frame {
+      border-radius: 7px;
+      padding: 4px 6px;
+      margin-bottom: 4px;
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.33), rgba(15, 23, 42, 0.9));
+      border: 1px solid rgba(129, 140, 248, 0.85);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+        "Courier New", monospace;
+      font-size: 0.8rem;
+    }
+
+    .stack-frame.global {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95));
+      border-color: rgba(148, 163, 184, 0.85);
+    }
+
+    .note-line {
+      margin-bottom: 4px;
+      padding: 2px 4px;
+      border-radius: 6px;
+    }
+
+    .note-line strong {
+      color: var(--accent-text);
+    }
+
+    .note-type-explain {
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .note-type-console {
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .note-type-warning {
+      background: rgba(248, 113, 113, 0.12);
+    }
+
+    .note-type-phase {
+      background: rgba(129, 140, 248, 0.1);
+    }
+
+    .app-footer {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(15, 23, 42, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      border-radius: var(--radius-pill);
+      border: 1px solid transparent;
+      padding: 7px 16px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: none;
+      color: var(--text-main);
+      transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease,
+        box-shadow 0.1s ease;
+    }
+
+    .btn.primary {
+      background: radial-gradient(circle at 0 0, rgba(129, 140, 248, 0.48), #4f46e5);
+      border-color: rgba(129, 140, 248, 0.9);
+      color: #e5e5ff;
+      box-shadow: 0 10px 22px rgba(79, 70, 229, 0.55);
+    }
+
+    .btn.secondary {
+      border-color: rgba(148, 163, 184, 0.8);
+      background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.26), #020617 65%);
+    }
+
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .btn:not(:disabled):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(15, 23, 42, 0.85);
+    }
+
+    .btn.primary:not(:disabled):hover {
+      background: radial-gradient(circle at 0 0, rgba(129, 140, 248, 0.7), #4f46e5);
+    }
+
+    .btn.secondary:not(:disabled):hover {
+      background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.35), #020617 65%);
+    }
+
+    .step-indicator {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .step-indicator span {
+      color: var(--accent-text);
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        margin-inline: 12px;
+        padding-inline: 14px;
+      }
+
+      .app-main {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .state-panel .state-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .app-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .scenario-select {
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .controls {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .btn {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div>
+        <h1>JavaScript Execution Visualizer</h1>
+        <p class="subtitle">Mini simulation of Global &amp; Function Execution Contexts, Call Stack, and Hoisting</p>
+      </div>
+      <div class="scenario-select">
+        <label for="scenario">Scenario</label>
+        <select id="scenario">
+          <option value="hoisting">Hoisting &amp; Global Execution</option>
+          <option value="callStack">Function Call Stack</option>
+        </select>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <section class="panel code-panel">
+        <div class="panel-header">
+          <h2>Code</h2>
+        </div>
+        <pre class="code-block" id="code-block"></pre>
+      </section>
+
+      <section class="panel state-panel">
+        <div class="panel-header">
+          <h2>Execution State</h2>
+        </div>
+        <div class="state-grid">
+          <div class="state-card">
+            <h3>Global Execution Context</h3>
+            <div class="state-body" id="global-context"></div>
+          </div>
+          <div class="state-card">
+            <h3>Call Stack</h3>
+            <div class="state-body" id="call-stack"></div>
+          </div>
+          <div class="state-card">
+            <h3>Notes / Console</h3>
+            <div class="state-body" id="notes"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <div class="controls">
+        <button id="reset-btn" class="btn secondary">Reset</button>
+        <button id="prev-btn" class="btn secondary">Previous</button>
+        <button id="next-btn" class="btn primary">Next step</button>
+      </div>
+      <div class="step-indicator" id="step-indicator"></div>
+    </footer>
+  </div>
+
+  <!-- All JavaScript inline so everything is in one file -->
+  <script>
+    const scenarios = {
+      hoisting: {
+        id: "hoisting",
+        name: "Hoisting & Global Execution",
+        code: [
+          "// Example 1: Hoisting in global and function scope",
+          "",
+          "console.log(x);",
+          "var x = 5;",
+          "",
+          "foo();",
+          "",
+          "function foo() {",
+            "  console.log(x);",
+            "  var x = 10;",
+            "  console.log(x);",
+            "}",
+        ],
+        steps: [
+          {
+            phase: "creation",
+            highlightPrimary: [],
+            highlightSecondary: [3, 8],
+            globals: {
+              x: "var (created) → undefined",
+              foo: "function (hoisted, full body)",
+            },
+            stack: [{ name: "Global Execution Context", kind: "global" }],
+            notes: [
+              {
+                type: "phase",
+                text: "Creation phase: JavaScript scans the code before execution.",
+              },
+              {
+                type: "explain",
+                text: "Variable declarations with var are hoisted and initialized as undefined.",
+              },
+              {
+                type: "explain",
+                text: "Function declarations are hoisted with their full body.",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [3],
+            highlightSecondary: [],
+            globals: {
+              x: "undefined",
+              foo: "function",
+            },
+            stack: [{ name: "Global Execution Context", kind: "global" }],
+            notes: [
+              {
+                type: "phase",
+                text: "Execution phase: code runs top to bottom.",
+              },
+              {
+                type: "console",
+                text: "console.log(x) prints undefined, not a ReferenceError.",
+              },
+              {
+                type: "explain",
+                text: "Because x exists in global memory (from hoisting) with value undefined.",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [4],
+            highlightSecondary: [],
+            globals: {
+              x: 5,
+              foo: "function",
+            },
+            stack: [{ name: "Global Execution Context", kind: "global" }],
+            notes: [
+              {
+                type: "explain",
+                text: "Assignment executes: x is updated from undefined to 5 in the global context.",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [6],
+            highlightSecondary: [8],
+            globals: {
+              x: 5,
+              foo: "function",
+            },
+            stack: [
+              { name: "Global Execution Context", kind: "global" },
+              { name: "foo()", kind: "function" },
+            ],
+            notes: [
+              {
+                type: "explain",
+                text: "Calling foo() pushes a new Function Execution Context on top of the call stack.",
+              },
+              {
+                type: "explain",
+                text: "A new local environment is created for foo's variables.",
+              },
+            ],
+          },
+          {
+            phase: "creation",
+            highlightPrimary: [9],
+            highlightSecondary: [],
+            globals: {
+              x: 5,
+              foo: "function",
+            },
+            locals: {
+              foo: {
+                x: "var (created) → undefined",
+              },
+            },
+            stack: [
+              { name: "Global Execution Context", kind: "global" },
+              { name: "foo()", kind: "function" },
+            ],
+            notes: [
+              {
+                type: "phase",
+                text: "Inside foo(): creation phase for this function's execution context.",
+              },
+              {
+                type: "explain",
+                text: "Local var x is hoisted and created with initial value undefined (separate from global x).",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [9],
+            highlightSecondary: [],
+            globals: {
+              x: 5,
+              foo: "function",
+            },
+            locals: {
+              foo: {
+                x: "undefined",
+              },
+            },
+            stack: [
+              { name: "Global Execution Context", kind: "global" },
+              { name: "foo()", kind: "function" },
+            ],
+            notes: [
+              {
+                type: "console",
+                text: "First console.log(x) inside foo() prints undefined.",
+              },
+              {
+                type: "explain",
+                text: "The engine finds a local x (hoisted but undefined) before looking at the global x.",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [10],
+            highlightSecondary: [],
+            globals: {
+              x: 5,
+              foo: "function",
+            },
+            locals: {
+              foo: {
+                x: 10,
+              },
+            },
+            stack: [
+              { name: "Global Execution Context", kind: "global" },
+              { name: "foo()", kind: "function" },
+            ],
+            notes: [
+              {
+                type: "explain",
+                text: "Assignment inside foo(): local x is set to 10.",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [11],
+            highlightSecondary: [],
+            globals: {
+              x: 5,
+              foo: "function",
+            },
+            locals: {
+              foo: {
+                x: 10,
+              },
+            },
+            stack: [
+              { name: "Global Execution Context", kind: "global" },
+              { name: "foo()", kind: "function" },
+            ],
+            notes: [
+              {
+                type: "console",
+                text: "Second console.log(x) inside foo() prints 10 (the local x).",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [12],
+            highlightSecondary: [],
+            globals: {
+              x: 5,
+              foo: "function",
+            },
+            locals: {},
+            stack: [{ name: "Global Execution Context", kind: "global" }],
+            notes: [
+              {
+                type: "explain",
+                text: "foo() finishes, its execution context is popped off the call stack.",
+              },
+              {
+                type: "explain",
+                text: "Global x is still 5; local x inside foo() is discarded with that context.",
+              },
+            ],
+          },
+        ],
+      },
+
+      callStack: {
+        id: "callStack",
+        name: "Function Call Stack",
+        code: [
+          "// Example 2: Nested function calls",
+          "",
+          "function a() {",
+          "  console.log('inside a');",
+          "  b();",
+          "  console.log('back in a');",
+          "}",
+          "",
+          "function b() {",
+          "  console.log('inside b');",
+          "  c();",
+          "}",
+          "",
+          "function c() {",
+          "  console.log('inside c');",
+          "}",
+          "",
+          "a();",
+        ],
+        steps: [
+          {
+            phase: "creation",
+            highlightPrimary: [],
+            highlightSecondary: [3, 9, 14],
+            globals: {
+              a: "function",
+              b: "function",
+              c: "function",
+            },
+            stack: [{ name: "Global Execution Context", kind: "global" }],
+            notes: [
+              {
+                type: "phase",
+                text: "Creation phase: function declarations a, b, and c are hoisted into global memory.",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [18],
+            highlightSecondary: [3],
+            globals: {
+              a: "function",
+              b: "function",
+              c: "function",
+            },
+            stack: [
+              { name: "Global Execution Context", kind: "global" },
+              { name: "a()", kind: "function" },
+            ],
+            notes: [
+              {
+                type: "explain",
+                text: "Calling a() pushes a new function execution context for a onto the call stack.",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [4],
+            highlightSecondary: [],
+            globals: {
+              a: "function",
+              b: "function",
+              c: "function",
+            },
+            stack: [
+              { name: "Global Execution Context", kind: "global" },
+              { name: "a()", kind: "function" },
+            ],
+            notes: [
+              {
+                type: "console",
+                text: "console.log('inside a') runs while a() is on top of the call stack.",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [5],
+            highlightSecondary: [9],
+            globals: {
+              a: "function",
+              b: "function",
+              c: "function",
+            },
+            stack: [
+              { name: "Global Execution Context", kind: "global" },
+              { name: "a()", kind: "function" },
+              { name: "b()", kind: "function" },
+            ],
+            notes: [
+              {
+                type: "explain",
+                text: "From inside a(), calling b() pushes b's execution context on top of the stack.",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [10],
+            highlightSecondary: [],
+            globals: {
+              a: "function",
+              b: "function",
+              c: "function",
+            },
+            stack: [
+              { name: "Global Execution Context", kind: "global" },
+              { name: "a()", kind: "function" },
+              { name: "b()", kind: "function" },
+            ],
+            notes: [
+              {
+                type: "console",
+                text: "console.log('inside b') runs while b() is on top of the stack.",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [11],
+            highlightSecondary: [14],
+            globals: {
+              a: "function",
+              b: "function",
+              c: "function",
+            },
+            stack: [
+              { name: "Global Execution Context", kind: "global" },
+              { name: "a()", kind: "function" },
+              { name: "b()", kind: "function" },
+              { name: "c()", kind: "function" },
+            ],
+            notes: [
+              {
+                type: "explain",
+                text: "From inside b(), calling c() pushes another function execution context on top.",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [15],
+            highlightSecondary: [],
+            globals: {
+              a: "function",
+              b: "function",
+              c: "function",
+            },
+            stack: [
+              { name: "Global Execution Context", kind: "global" },
+              { name: "a()", kind: "function" },
+              { name: "b()", kind: "function" },
+              { name: "c()", kind: "function" },
+            ],
+            notes: [
+              {
+                type: "console",
+                text: "console.log('inside c') runs with c() on top of the stack.",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [16],
+            highlightSecondary: [],
+            globals: {
+              a: "function",
+              b: "function",
+              c: "function",
+            },
+            stack: [
+              { name: "Global Execution Context", kind: "global" },
+              { name: "a()", kind: "function" },
+              { name: "b()", kind: "function" },
+            ],
+            notes: [
+              {
+                type: "explain",
+                text: "c() finishes first and its context is popped off the stack.",
+              },
+              {
+                type: "explain",
+                text: "Control returns to the next line in b().",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [12],
+            highlightSecondary: [],
+            globals: {
+              a: "function",
+              b: "function",
+              c: "function",
+            },
+            stack: [
+              { name: "Global Execution Context", kind: "global" },
+              { name: "a()", kind: "function" },
+            ],
+            notes: [
+              {
+                type: "explain",
+                text: "b() finishes next; its execution context is popped.",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [6],
+            highlightSecondary: [],
+            globals: {
+              a: "function",
+              b: "function",
+              c: "function",
+            },
+            stack: [
+              { name: "Global Execution Context", kind: "global" },
+              { name: "a()", kind: "function" },
+            ],
+            notes: [
+              {
+                type: "console",
+                text: "After b() returns, 'back in a' is logged.",
+              },
+            ],
+          },
+          {
+            phase: "execution",
+            highlightPrimary: [7],
+            highlightSecondary: [],
+            globals: {
+              a: "function",
+              b: "function",
+              c: "function",
+            },
+            stack: [{ name: "Global Execution Context", kind: "global" }],
+            notes: [
+              {
+                type: "explain",
+                text: "Finally a() finishes; its execution context is popped, leaving only the global context.",
+              },
+              {
+                type: "explain",
+                text: "The call stack follows a Last-In, First-Out (LIFO) order.",
+              },
+            ],
+          },
+        ],
+      },
+    };
+
+    // --- DOM helpers ---
+
+    const elements = {
+      scenario: document.getElementById("scenario"),
+      codeBlock: document.getElementById("code-block"),
+      globalContext: document.getElementById("global-context"),
+      callStack: document.getElementById("call-stack"),
+      notes: document.getElementById("notes"),
+      resetBtn: document.getElementById("reset-btn"),
+      prevBtn: document.getElementById("prev-btn"),
+      nextBtn: document.getElementById("next-btn"),
+      stepIndicator: document.getElementById("step-indicator"),
+    };
+
+    let currentScenario = scenarios.hoisting;
+    let currentStepIndex = 0;
+
+    function renderCode() {
+      const lines = currentScenario.code;
+      elements.codeBlock.innerHTML = "";
+
+      lines.forEach((line, idx) => {
+        const lineNumber = idx + 1;
+        const wrapper = document.createElement("div");
+        wrapper.className = "code-line";
+        wrapper.dataset.lineNumber = String(lineNumber);
+
+        const numSpan = document.createElement("span");
+        numSpan.className = "code-line-number";
+        numSpan.textContent = lineNumber.toString().padStart(2, " ");
+
+        const textSpan = document.createElement("span");
+        textSpan.className = "code-line-text";
+        textSpan.textContent = line || " ";
+
+        wrapper.appendChild(numSpan);
+        wrapper.appendChild(textSpan);
+
+        elements.codeBlock.appendChild(wrapper);
+      });
+    }
+
+    function highlightCode(step) {
+      const primary = new Set(step.highlightPrimary || []);
+      const secondary = new Set(step.highlightSecondary || []);
+
+      const children = elements.codeBlock.querySelectorAll(".code-line");
+      children.forEach((child) => {
+        child.classList.remove("highlight-primary", "highlight-secondary");
+        const lineNumber = Number(child.dataset.lineNumber);
+        if (primary.has(lineNumber)) {
+          child.classList.add("highlight-primary");
+        } else if (secondary.has(lineNumber)) {
+          child.classList.add("highlight-secondary");
+        }
+      });
+    }
+
+    function renderKeyValues(container, data, titleFallback) {
+      container.innerHTML = "";
+
+      if (!data || Object.keys(data).length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty-placeholder";
+        empty.textContent = titleFallback || "No entries in this context yet.";
+        container.appendChild(empty);
+        return;
+      }
+
+      Object.entries(data).forEach(([key, value]) => {
+        const row = document.createElement("div");
+        row.className = "state-kv";
+
+        const kSpan = document.createElement("span");
+        kSpan.className = "state-k";
+        kSpan.textContent = key;
+
+        const vSpan = document.createElement("span");
+        vSpan.className = "state-v";
+        vSpan.textContent = String(value);
+
+        row.appendChild(kSpan);
+        row.appendChild(vSpan);
+
+        container.appendChild(row);
+      });
+    }
+
+    function renderGlobalContext(step) {
+      const container = elements.globalContext;
+      const globalVars = step.globals || {};
+
+      container.innerHTML = "";
+
+      const phaseNote = document.createElement("div");
+      phaseNote.className = "empty-placeholder";
+      phaseNote.style.marginBottom = "4px";
+      phaseNote.textContent =
+        step.phase === "creation"
+          ? "Creation phase: identifiers are created and hoisted."
+          : "Execution phase: values are assigned and code runs.";
+      container.appendChild(phaseNote);
+
+      renderKeyValues(container, globalVars);
+    }
+
+    function renderCallStack(step) {
+      const stack = step.stack || [];
+      const target = elements.callStack;
+      target.innerHTML = "";
+
+      if (!stack.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty-placeholder";
+        empty.textContent = "Call stack is empty (program finished).";
+        target.appendChild(empty);
+        return;
+      }
+
+      stack.forEach((frame) => {
+        const frameDiv = document.createElement("div");
+        frameDiv.className = "stack-frame";
+        if (frame.kind === "global") {
+          frameDiv.classList.add("global");
+        }
+        frameDiv.textContent = frame.name;
+        target.appendChild(frameDiv);
+      });
+    }
+
+    function renderNotes(step) {
+      const notes = step.notes || [];
+      const locals = step.locals || {};
+      const target = elements.notes;
+
+      target.innerHTML = "";
+
+      if (notes.length === 0 && Object.keys(locals).length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty-placeholder";
+        empty.textContent = "Step-by-step explanations will appear here.";
+        target.appendChild(empty);
+        return;
+      }
+
+      notes.forEach((note) => {
+        const div = document.createElement("div");
+        div.className = "note-line";
+        if (note.type) {
+          div.classList.add(`note-type-${note.type}`);
+        }
+        div.textContent = note.text;
+        target.appendChild(div);
+      });
+
+      const localKeys = Object.keys(locals);
+      if (localKeys.length) {
+        const header = document.createElement("div");
+        header.className = "note-line note-type-explain";
+        header.innerHTML = "<strong>Local Execution Contexts</strong>";
+        target.appendChild(header);
+
+        localKeys.forEach((fnName) => {
+          const vars = locals[fnName];
+          const wrapper = document.createElement("div");
+          wrapper.className = "note-line";
+          const varsList = Object.entries(vars)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join(", ");
+          wrapper.textContent = `${fnName} → { ${varsList} }`;
+          target.appendChild(wrapper);
+        });
+      }
+    }
+
+    function renderStep() {
+      const step = currentScenario.steps[currentStepIndex];
+      if (!step) return;
+
+      highlightCode(step);
+      renderGlobalContext(step);
+      renderCallStack(step);
+      renderNotes(step);
+
+      const total = currentScenario.steps.length;
+      elements.stepIndicator.innerHTML = `Step <span>${currentStepIndex + 1}</span> of <span>${total}</span>`;
+
+      elements.prevBtn.disabled = currentStepIndex === 0;
+      elements.nextBtn.disabled = currentStepIndex === total - 1;
+    }
+
+    function resetScenario() {
+      currentStepIndex = 0;
+      renderCode();
+      renderStep();
+    }
+
+    // --- Event listeners ---
+
+    elements.scenario.addEventListener("change", (e) => {
+      const value = e.target.value;
+      currentScenario = scenarios[value] || scenarios.hoisting;
+      currentStepIndex = 0;
+      renderCode();
+      renderStep();
+    });
+
+    elements.resetBtn.addEventListener("click", () => {
+      resetScenario();
+    });
+
+    elements.prevBtn.addEventListener("click", () => {
+      if (currentStepIndex > 0) {
+        currentStepIndex -= 1;
+        renderStep();
+      }
+    });
+
+    elements.nextBtn.addEventListener("click", () => {
+      const maxIndex = currentScenario.steps.length - 1;
+      if (currentStepIndex < maxIndex) {
+        currentStepIndex += 1;
+        renderStep();
+      }
+    });
+
+    // --- Initial render ---
+
+    renderCode();
+    renderStep();
+  </script>
+</body>
+</html>
