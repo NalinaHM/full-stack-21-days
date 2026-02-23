@@ -2,14 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Multi Counter (Closures)</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>Mini E‑Commerce Store</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Multi Counter (Private State via Closures)</h1>
+  <div class="app-shell">
+    <header class="header">
+      <h1>Orbital Storefront</h1>
+      <p>Async/Await · Fetch API · Event Loop</p>
+    </header>
 
-  <button id="add-counter">Add Counter</button>
-  <div id="counters"></div>
+    <main class="main">
+      <section class="products-panel">
+        <h2>Products</h2>
+        <div id="products" class="products-grid"></div>
+      </section>
+
+      <section class="cart-panel">
+        <h2>Your Cart</h2>
+        <ul id="cartItems" class="cart-items"></ul>
+
+        <div class="cart-summary">
+          <div class="row">
+            <span>Subtotal</span>
+            <span id="subtotal">₹0.00</span>
+          </div>
+          <div class="row">
+            <span>Discount (%)</span>
+            <div class="discount-control">
+              <input type="number" id="discountInput" value="0" min="0" max="90" />
+              <button id="applyDiscountBtn">Apply</button>
+            </div>
+          </div>
+          <div class="row">
+            <span>Total</span>
+            <span id="total">₹0.00</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <section class="log-panel">
+      <h2>Event Loop Log</h2>
+      <pre id="log" class="log"></pre>
+    </section>
+  </div>
 
   <script src="app.js"></script>
 </body>
