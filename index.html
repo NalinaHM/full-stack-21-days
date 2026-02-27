@@ -2,51 +2,110 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Mini E‑Commerce Store</title>
+  <title>Smart Healthcare Appointment & Patient Monitor</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="app-shell">
-    <header class="header">
-      <h1>Orbital Storefront</h1>
-      <p>Async/Await · Fetch API · Event Loop</p>
-    </header>
+  <header>
+    <h1>Smart Healthcare Appointment & Patient Monitor</h1>
+  </header>
 
-    <main class="main">
-      <section class="products-panel">
-        <h2>Products</h2>
-        <div id="products" class="products-grid"></div>
-      </section>
-
-      <section class="cart-panel">
-        <h2>Your Cart</h2>
-        <ul id="cartItems" class="cart-items"></ul>
-
-        <div class="cart-summary">
-          <div class="row">
-            <span>Subtotal</span>
-            <span id="subtotal">₹0.00</span>
-          </div>
-          <div class="row">
-            <span>Discount (%)</span>
-            <div class="discount-control">
-              <input type="number" id="discountInput" value="0" min="0" max="90" />
-              <button id="applyDiscountBtn">Apply</button>
-            </div>
-          </div>
-          <div class="row">
-            <span>Total</span>
-            <span id="total">₹0.00</span>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <section class="log-panel">
-      <h2>Event Loop Log</h2>
-      <pre id="log" class="log"></pre>
+  <main>
+    <section class="panel">
+      <h2>1. Load Doctors (Async)</h2>
+      <button id="btn-load-doctors">Load Doctors</button>
+      <div id="doctors-list" class="list"></div>
     </section>
-  </div>
+
+    <section class="panel">
+      <h2>2. Register Patient</h2>
+      <form id="form-register-patient">
+        <label>
+          Patient ID
+          <input type="number" id="patient-id" required />
+        </label>
+        <label>
+          Name
+          <input type="text" id="patient-name" required />
+        </label>
+        <label>
+          Age
+          <input type="number" id="patient-age" required />
+        </label>
+        <label>
+          Height (cm)
+          <input type="number" id="patient-height" required />
+        </label>
+        <label>
+          Weight (kg)
+          <input type="number" id="patient-weight" required />
+        </label>
+        <button type="submit">Register/Update Patient</button>
+      </form>
+      <pre id="patient-summary"></pre>
+    </section>
+
+    <section class="panel">
+      <h2>3. Add Vitals</h2>
+      <form id="form-add-vital">
+        <label>
+          Patient ID
+          <input type="number" id="vital-patient-id" required />
+        </label>
+        <label>
+          Type
+          <select id="vital-type" required>
+            <option value="HR">Heart Rate (HR)</option>
+            <option value="SPO2">SpO2</option>
+            <option value="BP">Blood Pressure (BP)</option>
+          </select>
+        </label>
+        <label>
+          Value
+          <input type="text" id="vital-value" required />
+        </label>
+        <button type="submit">Add Vital</button>
+      </form>
+      <div id="patient-stats"></div>
+    </section>
+
+    <section class="panel">
+      <h2>4. Book Appointment</h2>
+      <form id="form-book-appointment">
+        <label>
+          Patient ID
+          <input type="number" id="appt-patient-id" required />
+        </label>
+        <label>
+          Doctor
+          <select id="appt-doctor-id" required>
+            <option value="">(Load doctors first)</option>
+          </select>
+        </label>
+        <label>
+          Time
+          <input type="datetime-local" id="appt-time" required />
+        </label>
+        <label>
+          Reason
+          <input type="text" id="appt-reason" required />
+        </label>
+        <button type="submit">Book Appointment</button>
+      </form>
+      <button id="btn-load-appointments">Load Patient Appointments</button>
+      <div id="appointments-list" class="list"></div>
+    </section>
+
+    <section class="panel">
+      <h2>5. Alerts</h2>
+      <p>Simple rule: if Heart Rate &gt; 100 or SpO2 &lt; 94, show alert.</p>
+      <div id="alerts-list" class="list"></div>
+    </section>
+  </main>
+
+  <footer>
+    <small>Pure JavaScript demo &mdash; async, closures, and simulated API.</small>
+  </footer>
 
   <script src="app.js"></script>
 </body>
