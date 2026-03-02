@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Secure AI Lab Management System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-card: #020617;
+      --bg-muted: #111827;
+      --primary: #38bdf8;
+      --primary-soft: rgba(56, 189, 248, 0.15);
+      --accent: #a855f7;
+      --text: #e5e7eb;
+      --text-muted: #9ca3af;
+      --danger: #f97373;
+      --success: #22c55e;
+      --border: #1f2933;
+      --radius-lg: 18px;
+      --radius-md: 10px;
+      --radius-pill: 9999px;
+      --shadow-soft: 0 20px 40px rgba(15, 23, 42, 0.8);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #1d283a 0, #020617 55%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    .app-shell {
+      max-width: 1200px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1.4fr 1.8fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: linear-gradient(145deg, #020617, #020617);
+      border-radius: 28px;
+      padding: 24px 24px 20px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: -200px;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(56, 189, 248, 0.12), transparent 55%),
+        radial-gradient(circle at 100% 0%, rgba(168, 85, 247, 0.08), transparent 55%);
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .panel-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(56, 189, 248, 0.06));
+      border-radius: var(--radius-pill);
+      padding: 4px 12px;
+      font-size: 0.75rem;
+      color: var(--primary);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.35);
+    }
+
+    h1 {
+      margin-top: 14px;
+      font-size: 1.8rem;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      max-width: 340px;
+    }
+
+    .stack-row {
+      margin-top: 22px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill {
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-kv-key {
+      font-weight: 600;
+      color: var(--text);
+      opacity: 0.85;
+    }
+
+    .divider {
+      margin: 20px 0 16px;
+      height: 1px;
+      background: linear-gradient(
+        to right,
+        transparent,
+        rgba(148, 163, 184, 0.6),
+        transparent
+      );
+    }
+
+    .tabs {
+      display: flex;
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: var(--radius-pill);
+      padding: 4px;
+      border: 1px solid rgba(30, 64, 175, 0.6);
+      backdrop-filter: blur(12px);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      transition: 0.2s all ease;
+    }
+
+    .tab span.role {
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+    }
+
+    .tab span.desc {
+      font-size: 0.7rem;
+      opacity: 0.8;
+    }
+
+    .tab.active {
+      background: radial-gradient(circle at top, #1d4ed8, #0f172a);
+      color: var(--text);
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.6),
+        0 18px 35px rgba(15, 23, 42, 0.9);
+    }
+
+    .tab.active span.role {
+      color: var(--primary);
+    }
+
+    .auth-box {
+      margin-top: 18px;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: var(--radius-lg);
+      padding: 16px 16px 14px;
+      border: 1px solid rgba(30, 64, 175, 0.7);
+    }
+
+    .auth-toggle {
+      display: inline-flex;
+      padding: 3px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(31, 41, 55, 0.9);
+    }
+
+    .auth-toggle button {
+      flex: 1;
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: none;
+      font-size: 0.75rem;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-muted);
+      transition: 0.18s all ease;
+    }
+
+    .auth-toggle button.active {
+      background: linear-gradient(135deg, var(--primary), #6366f1);
+      color: #0b1120;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.45);
+    }
+
+    .field-grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      border-radius: 999px;
+      border: 1px solid rgba(31, 41, 55, 1);
+      padding: 8px 12px;
+      background: #020617;
+      color: var(--text);
+      font-size: 0.8rem;
+      outline: none;
+      transition: 0.15s border-color ease, 0.15s box-shadow ease;
+    }
+
+    .field textarea {
+      border-radius: 12px;
+      resize: vertical;
+      min-height: 70px;
+      font-family: inherit;
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4);
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: none;
+      padding: 9px 16px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: 0.18s all ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #6366f1);
+      color: #020617;
+      font-weight: 600;
+      box-shadow: 0 14px 30px rgba(56, 189, 248, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 40px rgba(56, 189, 248, 0.45);
+    }
+
+    .btn-ghost {
+      background: rgba(15, 23, 42, 0.7);
+      color: var(--text-muted);
+      border: 1px solid rgba(55, 65, 81, 0.8);
+    }
+
+    .btn-ghost:hover {
+      border-color: rgba(148, 163, 184, 0.9);
+      color: var(--text);
+    }
+
+    .auth-footer-row {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .status-pill {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .status-pill strong {
+      color: var(--primary);
+    }
+
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      background: rgba(15, 23, 42, 0.98);
+      border-radius: 999px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      font-size: 0.78rem;
+      color: var(--text);
+      box-shadow: 0 14px 40px rgba(15, 23, 42, 0.9);
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: 0.18s all ease;
+      z-index: 100;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .toast.bad {
+      border-color: rgba(248, 113, 113, 0.7);
+      color: #fecaca;
+    }
+
+    .role-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 1);
+      font-size: 0.73rem;
+      color: var(--text-muted);
+    }
+
+    .role-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    .role-label {
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.68rem;
+    }
+
+    .card-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .view-toggle {
+      display: inline-flex;
+      padding: 3px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 1);
+      border: 1px solid rgba(31, 41, 55, 1);
+    }
+
+    .view-toggle button {
+      border-radius: 999px;
+      border: none;
+      padding: 4px 10px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-muted);
+      transition: 0.16s all ease;
+    }
+
+    .view-toggle button.active {
+      background: rgba(17, 24, 39, 1);
+      color: var(--primary);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 10px;
+      max-height: 450px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .exp-card {
+      background: rgba(15, 23, 42, 0.97);
+      border-radius: var(--radius-md);
+      padding: 10px 11px;
+      border: 1px solid rgba(31, 41, 55, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.78rem;
+    }
+
+    .exp-title {
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+
+    .exp-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .exp-status {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: 1px solid rgba(55, 65, 81, 1);
+      color: var(--text-muted);
+    }
+
+    .exp-status[data-status="PENDING"] {
+      border-color: rgba(250, 204, 21, 0.7);
+      color: #fde68a;
+    }
+
+    .exp-status[data-status="UNDER_REVIEW"] {
+      border-color: rgba(59, 130, 246, 0.8);
+      color: #bfdbfe;
+    }
+
+    .exp-status[data-status="GRADED"] {
+      border-color: rgba(34, 197, 94, 0.8);
+      color: #bbf7d0;
+    }
+
+    .exp-status[data-status="REJECTED"] {
+      border-color: rgba(248, 113, 113, 0.9);
+      color: #fecaca;
+    }
+
+    .exp-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .exp-footer small {
+      color: var(--text-muted);
+    }
+
+    .highlight-text {
+      color: var(--primary);
+      font-weight: 500;
+    }
+
+    .empty-state {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      padding: 12px 10px;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px dashed rgba(55, 65, 81, 1);
+    }
+
+    .input-row-inline {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .input-row-inline .field input,
+    .input-row-inline .field select {
+      width: 100%;
+    }
+
+    .tiny {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="toast" id="toast"></div>
+
+  <div class="app-shell">
+    <!-- LEFT: AUTH & ROLE SWITCH -->
+    <div class="panel">
+      <div class="panel-inner">
+        <div class="badge">
+          <div class="badge-dot"></div>
+          Secure AI Lab · JWT + RBAC
+        </div>
+        <h1>Secure AI Lab Management</h1>
+        <p class="subtitle">
+          Role-based workspace for Students, Instructors, and Admins. JWT authentication, protected routes, and graded AI experiments.
+        </p>
+
+        <div class="stack-row">
+          <div class="pill"><span class="pill-kv-key">Stack</span> React UI · Node · Express · MongoDB</div>
+          <div class="pill"><span class="pill-kv-key">Security</span> JWT · Bcrypt · Role-based</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Role Tabs -->
+        <div class="tabs" id="roleTabs">
+          <button class="tab active" data-role="STUDENT">
+            <span class="role">Student</span>
+            <span class="desc">Submit & track AI experiments</span>
+          </button>
+          <button class="tab" data-role="INSTRUCTOR">
+            <span class="role">Instructor</span>
+            <span class="desc">Review & grade submissions</span>
+          </button>
+          <button class="tab" data-role="ADMIN">
+            <span class="role">Admin</span>
+            <span class="desc">Manage users & access</span>
+          </button>
+        </div>
+
+        <!-- Auth Card -->
+        <div class="auth-box">
+          <div class="card-header-row">
+            <div class="role-chip">
+              <div class="role-dot"></div>
+              <span class="role-label" id="currentRoleLabel">STUDENT</span>
+              <span style="font-size: 0.68rem; opacity: 0.8;" id="currentRoleHint">
+                can self-register & submit
+              </span>
+            </div>
+            <div class="auth-toggle">
+              <button type="button" id="modeLogin" class="active">Login</button>
+              <button type="button" id="modeRegister">Register</button>
+            </div>
+          </div>
+
+          <form id="authForm">
+            <div class="field-grid" id="authFields">
+              <div class="field" id="fieldName" style="display: none;">
+                <label for="authName">Full name</label>
+                <input type="text" id="authName" placeholder="Jane Doe" />
+              </div>
+              <div class="field">
+                <label for="authEmail">Email</label>
+                <input type="email" id="authEmail" placeholder="you@example.com" />
+              </div>
+              <div class="field">
+                <label for="authPassword">Password</label>
+                <input type="password" id="authPassword" placeholder="••••••••" />
+              </div>
+            </div>
+
+            <div class="auth-footer-row">
+              <button type="submit" class="btn btn-primary" id="authSubmitBtn">
+                Login
+              </button>
+              <div class="status-pill">
+                <span id="authStatusLabel">JWT-secured session</span>
+              </div>
+            </div>
+          </form>
+
+          <p class="tiny" style="margin-top: 8px;">
+            Students self-register. Instructors & Admins are created by an Admin in the Admin panel.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: DASHBOARD VIEW -->
+    <div class="panel">
+      <div class="panel-inner">
+        <div class="card-header-row">
+          <div class="role-chip">
+            <div class="role-dot"></div>
+            <span class="role-label" id="dashRoleLabel">Not Authenticated</span>
+            <span style="font-size: 0.68rem; opacity: 0.8;" id="dashUserEmail">Please log in</span>
+          </div>
+          <div class="view-toggle">
+            <button type="button" class="active" id="viewDashboardBtn">Dashboard</button>
+            <button type="button" id="viewAdminBtn">Admin</button>
+          </div>
+        </div>
+
+        <!-- DASHBOARD CONTENT -->
+        <div id="dashboardView">
+          <!-- Student actions -->
+          <div id="studentSection" style="display: none; margin-bottom: 14px;">
+            <h3 style="font-size: 0.9rem; margin-bottom: 6px;">Submit AI experiment</h3>
+            <form id="expForm">
+              <div class="field-grid">
+                <div class="field">
+                  <label for="expTitle">Title</label>
+                  <input type="text" id="expTitle" placeholder="e.g. CNN for X-ray classification" />
+                </div>
+                <div class="field">
+                  <label for="expDescription">Description</label>
+                  <textarea id="expDescription" placeholder="Short description of your experiment..."></textarea>
+                </div>
+                <div class="input-row-inline">
+                  <div class="field">
+                    <label for="expDataset">Dataset URL (optional)</label>
+                    <input type="url" id="expDataset" placeholder="https://..." />
+                  </div>
+                  <div class="field">
+                    <label for="expModel">Model details (optional)</label>
+                    <input type="text" id="expModel" placeholder="e.g. ResNet50, LR=1e-3" />
+                  </div>
+                </div>
+              </div>
+              <div class="auth-footer-row">
+                <button type="submit" class="btn btn-primary">Submit experiment</button>
+                <button type="button" class="btn btn-ghost" id="refreshMyExperimentsBtn">Refresh list</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Instructor actions -->
+          <div id="instructorSection" style="display: none; margin-bottom: 10px;">
+            <h3 style="font-size: 0.9rem; margin-bottom: 6px;">Review experiments</h3>
+            <div class="input-row-inline">
+              <div class="field">
+                <label for="filterStatus">Filter by status</label>
+                <select id="filterStatus">
+                  <option value="">All</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="UNDER_REVIEW">Under review</option>
+                  <option value="GRADED">Graded</option>
+                  <option value="REJECTED">Rejected</option>
+                </select>
+              </div>
+              <div class="field" style="align-self: flex-end;">
+                <button type="button" class="btn btn-primary" id="refreshAllExperimentsBtn">Refresh</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Experiments board -->
+          <div>
+            <h3 style="font-size: 0.9rem; margin-bottom: 4px;" id="boardTitle">
+              Experiments
+            </h3>
+            <div class="board" id="board"></div>
+          </div>
+        </div>
+
+        <!-- ADMIN VIEW -->
+        <div id="adminView" style="display: none;">
+          <h3 style="font-size: 0.9rem; margin-bottom: 8px;">Admin · Manage users</h3>
+          <form id="adminCreateUserForm">
+            <div class="field-grid">
+              <div class="field">
+                <label for="adminUserName">Name</label>
+                <input type="text" id="adminUserName" placeholder="New user name" />
+              </div>
+              <div class="field">
+                <label for="adminUserEmail">Email</label>
+                <input type="email" id="adminUserEmail" placeholder="user@example.com" />
+              </div>
+              <div class="field">
+                <label for="adminUserPassword">Password</label>
+                <input type="password" id="adminUserPassword" placeholder="Temp password" />
+              </div>
+              <div class="field">
+                <label for="adminUserRole">Role</label>
+                <select id="adminUserRole">
+                  <option value="STUDENT">Student</option>
+                  <option value="INSTRUCTOR">Instructor</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+              </div>
+            </div>
+            <div class="auth-footer-row" style="margin-top: 14px;">
+              <button type="submit" class="btn btn-primary">Create user</button>
+              <button type="button" id="refreshUsersBtn" class="btn btn-ghost">Refresh users</button>
+            </div>
+          </form>
+
+          <div style="margin-top: 16px;">
+            <h4 style="font-size: 0.85rem; margin-bottom: 6px;">Users</h4>
+            <div class="board" id="usersBoard"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = "http://localhost:4000";
+
+    const roleTabs = document.querySelectorAll(".tab");
+    const currentRoleLabel = document.getElementById("currentRoleLabel");
+    const currentRoleHint = document.getElementById("currentRoleHint");
+    const dashRoleLabel = document.getElementById("dashRoleLabel");
+    const dashUserEmail = document.getElementById("dashUserEmail");
+
+    const modeLoginBtn = document.getElementById("modeLogin");
+    const modeRegisterBtn = document.getElementById("modeRegister");
+    const fieldName = document.getElementById("fieldName");
+    const authForm = document.getElementById("authForm");
+    const authSubmitBtn = document.getElementById("authSubmitBtn");
+    const authStatusLabel = document.getElementById("authStatusLabel");
+
+    const viewDashboardBtn = document.getElementById("viewDashboardBtn");
+    const viewAdminBtn = document.getElementById("viewAdminBtn");
+    const dashboardView = document.getElementById("dashboardView");
+    const adminView = document.getElementById("adminView");
+
+    const studentSection = document.getElementById("studentSection");
+    const instructorSection = document.getElementById("instructorSection");
+    const board = document.getElementById("board");
+    const boardTitle = document.getElementById("boardTitle");
+
+    const expForm = document.getElementById("expForm");
+    const refreshMyExperimentsBtn = document.getElementById("refreshMyExperimentsBtn");
+    const refreshAllExperimentsBtn = document.getElementById("refreshAllExperimentsBtn");
+    const filterStatus = document.getElementById("filterStatus");
+
+    const adminCreateUserForm = document.getElementById("adminCreateUserForm");
+    const refreshUsersBtn = document.getElementById("refreshUsersBtn");
+    const usersBoard = document.getElementById("usersBoard");
+
+    const toast = document.getElementById("toast");
+
+    let activeRoleTab = "STUDENT";
+    let authMode = "LOGIN"; // or "REGISTER"
+    let authToken = null;
+    let authUser = null;
+
+    function showToast(message, isError = false) {
+      toast.textContent = message;
+      toast.classList.toggle("bad", isError);
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    function updateRoleTabUI() {
+      roleTabs.forEach((tab) => {
+        tab.classList.toggle("active", tab.dataset.role === activeRoleTab);
+      });
+      currentRoleLabel.textContent = activeRoleTab;
+      if (activeRoleTab === "STUDENT") {
+        currentRoleHint.textContent = "can self-register & submit experiments";
+      } else if (activeRoleTab === "INSTRUCTOR") {
+        currentRoleHint.textContent = "login only · review & grade";
+      } else {
+        currentRoleHint.textContent = "login only · manage users & access";
+      }
+    }
+
+    function updateAuthModeUI() {
+      const isRegister = authMode === "REGISTER";
+      fieldName.style.display = isRegister ? "flex" : "none";
+      authSubmitBtn.textContent = isRegister ? "Register" : "Login";
+      modeLoginBtn.classList.toggle("active", !isRegister);
+      modeRegisterBtn.classList.toggle("active", isRegister);
+    }
+
+    function updateSessionUI() {
+      if (!authUser || !authToken) {
+        dashRoleLabel.textContent = "Not Authenticated";
+        dashUserEmail.textContent = "Please log in";
+        board.innerHTML = '<div class="empty-state">No data. Authenticate to see your workspace.</div>';
+        studentSection.style.display = "none";
+        instructorSection.style.display = "none";
+        adminView.style.display = "none";
+        viewAdminBtn.disabled = true;
+        viewAdminBtn.classList.remove("active");
+        viewDashboardBtn.classList.add("active");
+        dashboardView.style.display = "block";
+        return;
+      }
+
+      dashRoleLabel.textContent = authUser.role + " · " + authUser.name;
+      dashUserEmail.textContent = authUser.email;
+
+      studentSection.style.display = authUser.role === "STUDENT" ? "block" : "none";
+      instructorSection.style.display = authUser.role === "INSTRUCTOR" || authUser.role === "ADMIN" ? "block" : "none";
+
+      if (authUser.role === "ADMIN") {
+        viewAdminBtn.disabled = false;
+      } else {
+        viewAdminBtn.disabled = true;
+        viewAdminBtn.classList.remove("active");
+        viewDashboardBtn.classList.add("active");
+        dashboardView.style.display = "block";
+        adminView.style.display = "none";
+      }
+
+      if (authUser.role === "STUDENT") {
+        boardTitle.textContent = "My experiments";
+        loadMyExperiments();
+      } else {
+        boardTitle.textContent = "All experiments";
+        loadAllExperiments();
+      }
+      if (authUser.role === "ADMIN") {
+        loadUsers();
+      }
+    }
+
+    roleTabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        activeRoleTab = tab.dataset.role;
+        updateRoleTabUI();
+        if (activeRoleTab === "STUDENT") {
+          authMode = "REGISTER";
+        } else {
+          authMode = "LOGIN";
+        }
+        updateAuthModeUI();
+      });
+    });
+
+    modeLoginBtn.addEventListener("click", () => {
+      authMode = "LOGIN";
+      updateAuthModeUI();
+    });
+
+    modeRegisterBtn.addEventListener("click", () => {
+      authMode = "REGISTER";
+      updateAuthModeUI();
+    });
+
+    viewDashboardBtn.addEventListener("click", () => {
+      viewDashboardBtn.classList.add("active");
+      viewAdminBtn.classList.remove("active");
+      dashboardView.style.display = "block";
+      adminView.style.display = "none";
+    });
+
+    viewAdminBtn.addEventListener("click", () => {
+      if (!authUser || authUser.role !== "ADMIN") return;
+      viewAdminBtn.classList.add("active");
+      viewDashboardBtn.classList.remove("active");
+      dashboardView.style.display = "none";
+      adminView.style.display = "block";
+      loadUsers();
+    });
+
+    authForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("authEmail").value.trim();
+      const password = document.getElementById("authPassword").value.trim();
+      const name = document.getElementById("authName").value.trim();
+
+      if (!email || !password || (authMode === "REGISTER" && !name)) {
+        showToast("Fill in all required fields.", true);
+        return;
+      }
+
+      try {
+        if (authMode === "REGISTER") {
+          if (activeRoleTab !== "STUDENT") {
+            showToast("Only students can self-register. Use Admin panel.", true);
+            return;
+          }
+          const res = await fetch(API_BASE_URL + "/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, password }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || "Register failed");
+          authToken = data.token;
+          authUser = data.user;
+          authStatusLabel.textContent = "Authenticated as Student (JWT)";
+          showToast("Student registered & logged in.");
+        } else {
+          const res = await fetch(API_BASE_URL + "/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || "Login failed");
+          authToken = data.token;
+          authUser = data.user;
+          authStatusLabel.textContent = "Authenticated (" + authUser.role + ")";
+          showToast("Logged in as " + authUser.role);
+        }
+        updateSessionUI();
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || "Auth error", true);
+      }
+    });
+
+    expForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!authUser || authUser.role !== "STUDENT") {
+        showToast("Only students can submit experiments.", true);
+        return;
+      }
+      const title = document.getElementById("expTitle").value.trim();
+      const description = document.getElementById("expDescription").value.trim();
+      const datasetUrl = document.getElementById("expDataset").value.trim();
+      const modelDetails = document.getElementById("expModel").value.trim();
+
+      if (!title || !description) {
+        showToast("Title & description required.", true);
+        return;
+      }
+
+      try {
+        const res = await fetch(API_BASE_URL + "/api/experiments", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + authToken,
+          },
+          body: JSON.stringify({ title, description, datasetUrl, modelDetails }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Submit failed");
+        showToast("Experiment submitted.");
+        expForm.reset();
+        loadMyExperiments();
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || "Error submitting", true);
+      }
+    });
+
+    refreshMyExperimentsBtn.addEventListener("click", () => {
+      if (authUser && authUser.role === "STUDENT") {
+        loadMyExperiments();
+      }
+    });
+
+    refreshAllExperimentsBtn.addEventListener("click", () => {
+      if (authUser && (authUser.role === "INSTRUCTOR" || authUser.role === "ADMIN")) {
+        loadAllExperiments();
+      }
+    });
+
+    filterStatus.addEventListener("change", () => {
+      if (authUser && (authUser.role === "INSTRUCTOR" || authUser.role === "ADMIN")) {
+        loadAllExperiments();
+      }
+    });
+
+    adminCreateUserForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!authUser || authUser.role !== "ADMIN") {
+        showToast("Admin only.", true);
+        return;
+      }
+      const name = document.getElementById("adminUserName").value.trim();
+      const email = document.getElementById("adminUserEmail").value.trim();
+      const password = document.getElementById("adminUserPassword").value.trim();
+      const role = document.getElementById("adminUserRole").value;
+
+      if (!name || !email || !password) {
+        showToast("Fill all user fields.", true);
+        return;
+      }
+
+      try {
+        const res = await fetch(API_BASE_URL + "/api/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + authToken,
+          },
+          body: JSON.stringify({ name, email, password, role }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Create user failed");
+        showToast("User created (" + data.role + ").");
+        adminCreateUserForm.reset();
+        loadUsers();
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || "Error creating user", true);
+      }
+    });
+
+    refreshUsersBtn.addEventListener("click", () => {
+      if (authUser && authUser.role === "ADMIN") {
+        loadUsers();
+      }
+    });
+
+    async function loadMyExperiments() {
+      if (!authUser || authUser.role !== "STUDENT") return;
+      try {
+        const res = await fetch(API_BASE_URL + "/api/experiments/my", {
+          headers: { Authorization: "Bearer " + authToken },
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed to load experiments");
+        renderExperiments(data, "student");
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || "Error loading experiments", true);
+      }
+    }
+
+    async function loadAllExperiments() {
+      if (!authUser || (authUser.role !== "INSTRUCTOR" && authUser.role !== "ADMIN")) return;
+      try {
+        const qs = new URLSearchParams();
+        if (filterStatus.value) qs.set("status", filterStatus.value);
+        const res = await fetch(API_BASE_URL + "/api/experiments?" + qs.toString(), {
+          headers: { Authorization: "Bearer " + authToken },
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed to load experiments");
+        renderExperiments(data, "instructor");
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || "Error loading experiments", true);
+      }
+    }
+
+    function renderExperiments(experiments, mode) {
+      if (!experiments || experiments.length === 0) {
+        board.innerHTML =
+          '<div class="empty-state">No experiments yet. ' +
+          (mode === "student" ? "Submit your first AI experiment." : "Waiting for student submissions.") +
+          "</div>";
+        return;
+      }
+      board.innerHTML = "";
+      experiments.forEach((exp) => {
+        const card = document.createElement("div");
+        card.className = "exp-card";
+        card.innerHTML = `
+          <div class="exp-title">${exp.title}</div>
+          <div class="exp-meta">
+            ${
+              exp.student
+                ? `<span>Student: <span class="highlight-text">${exp.student.name || ""}</span></span>`
+                : ""
+            }
+            <span class="exp-status" data-status="${exp.status}">${exp.status}</span>
+            ${
+              typeof exp.grade === "number"
+                ? `<span>Grade: <span class="highlight-text">${exp.grade}</span></span>`
+                : ""
+            }
+          </div>
+          <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 2px;">
+            ${exp.description || ""}
+          </div>
+          ${
+            exp.feedback
+              ? `<div style="font-size: 0.72rem; color:#a5b4fc; margin-top:2px;">Feedback: ${exp.feedback}</div>`
+              : ""
+          }
+          <div class="exp-footer">
+            <small>${
+              exp.reviewedBy && exp.reviewedBy.name
+                ? "Reviewed by " + exp.reviewedBy.name
+                : "Not yet reviewed"
+            }</small>
+            ${
+              mode === "instructor"
+                ? `<button class="btn btn-ghost" data-id="${exp._id}">Review</button>`
+                : ""
+            }
+          </div>
+        `;
+        board.appendChild(card);
+
+        if (mode === "instructor") {
+          const btn = card.querySelector("button");
+          btn.addEventListener("click", () => openReviewPrompt(exp));
+        }
+      });
+    }
+
+    function openReviewPrompt(exp) {
+      if (!authUser || (authUser.role !== "INSTRUCTOR" && authUser.role !== "ADMIN")) return;
+      const grade = prompt("Grade (0–100). Leave empty to keep current:", exp.grade ?? "");
+      if (grade === null) return;
+      const status = prompt(
+        'Status (PENDING, UNDER_REVIEW, GRADED, REJECTED). Leave empty to keep current:',
+        exp.status
+      );
+      if (status === null) return;
+      const feedback = prompt("Feedback. Leave empty to keep current:", exp.feedback ?? "");
+      reviewExperiment(exp._id, {
+        grade: grade === "" ? undefined : Number(grade),
+        status: status === "" ? undefined : status,
+        feedback: feedback === "" ? undefined : feedback,
+      });
+    }
+
+    async function reviewExperiment(id, payload) {
+      try {
+        const res = await fetch(API_BASE_URL + "/api/experiments/" + id + "/review", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + authToken,
+          },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Review failed");
+        showToast("Experiment updated.");
+        loadAllExperiments();
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || "Error reviewing", true);
+      }
+    }
+
+    async function loadUsers() {
+      if (!authUser || authUser.role !== "ADMIN") return;
+      try {
+        const res = await fetch(API_BASE_URL + "/api/users", {
+          headers: { Authorization: "Bearer " + authToken },
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed to load users");
+        renderUsers(data);
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || "Error loading users", true);
+      }
+    }
+
+    function renderUsers(users) {
+      if (!users || users.length === 0) {
+        usersBoard.innerHTML =
+          '<div class="empty-state">No users found. Create one above.</div>';
+        return;
+      }
+      usersBoard.innerHTML = "";
+      users.forEach((u) => {
+        const div = document.createElement("div");
+        div.className = "exp-card";
+        div.innerHTML = `
+          <div class="exp-title">${u.name} <span style="color: var(--text-muted); font-weight: 400;">· ${u.email}</span></div>
+          <div class="exp-meta">
+            <span class="exp-status" data-status="UNDER_REVIEW">${u.role}</span>
+            <span>${u.isActive ? "Active" : "Blocked"}</span>
+          </div>
+        `;
+        usersBoard.appendChild(div);
+      });
+    }
+
+    (function init() {
+      authMode = "LOGIN";
+      updateRoleTabUI();
+      updateAuthModeUI();
+      updateSessionUI();
+    })();
+  </script>
+</body>
+</html>
