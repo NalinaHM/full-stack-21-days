@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Smart Secure Healthcare</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- React + ReactDOM + React Router + Axios + Babel (for JSX in-browser) -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-router-dom@6/umd/react-router-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at top, #0f172a 0, #020617 40%, #020617 100%);
+        color: #e5e7eb;
+      }
+      .app {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .app-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+        backdrop-filter: blur(16px);
+        background: linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7));
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      .logo {
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        font-size: 1.1rem;
+      }
+      .app-header nav {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+      .user-pill {
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        background: rgba(30, 64, 175, 0.25);
+        border: 1px solid rgba(129, 140, 248, 0.4);
+        font-size: 0.85rem;
+      }
+      .role-tag {
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        margin-left: 0.5rem;
+        padding: 0.15rem 0.4rem;
+        border-radius: 999px;
+        background: rgba(248, 250, 252, 0.15);
+      }
+      .link {
+        color: #c7d2fe;
+        text-decoration: none;
+        font-size: 0.95rem;
+      }
+      .link:hover {
+        text-decoration: underline;
+      }
+      .app-main {
+        padding: 2rem;
+        max-width: 1200px;
+        width: 100%;
+        margin: 0 auto 3rem;
+      }
+      .hero {
+        text-align: center;
+        padding: 4rem 2rem;
+        border-radius: 1.5rem;
+        background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.15), transparent 55%),
+          radial-gradient(circle at top right, rgba(129, 140, 248, 0.18), transparent 55%),
+          rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.9);
+      }
+      .hero h1 {
+        margin-bottom: 0.75rem;
+        font-size: clamp(2.2rem, 3vw, 2.8rem);
+      }
+      .hero p {
+        margin-bottom: 2rem;
+        color: #cbd5f5;
+      }
+      .hero-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+      }
+      .btn {
+        border: none;
+        border-radius: 999px;
+        padding: 0.6rem 1.4rem;
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        background: linear-gradient(135deg, #4f46e5, #06b6d4);
+        color: white;
+        box-shadow: 0 14px 30px rgba(37, 99, 235, 0.4);
+        transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+      }
+      .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 20px 40px rgba(37, 99, 235, 0.5);
+      }
+      .btn:disabled {
+        opacity: 0.7;
+        cursor: default;
+      }
+      .btn-outline {
+        background: transparent;
+        border: 1px solid rgba(148, 163, 184, 0.7);
+        box-shadow: none;
+      }
+      .btn-outline:hover {
+        background: rgba(15, 23, 42, 0.85);
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.7);
+      }
+      .card {
+        background: radial-gradient(circle at top, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.9));
+        border-radius: 1.25rem;
+        padding: 1.5rem 1.7rem;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+        margin-bottom: 1.5rem;
+      }
+      .card h2 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        font-size: 1.25rem;
+      }
+      .form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      .form label {
+        display: flex;
+        flex-direction: column;
+        font-size: 0.9rem;
+        gap: 0.3rem;
+      }
+      input,
+      select {
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(148, 163, 184, 0.6);
+        background: rgba(15, 23, 42, 0.9);
+        color: #e5e7eb;
+        font-size: 0.9rem;
+      }
+      input:focus,
+      select:focus {
+        outline: 2px solid rgba(96, 165, 250, 0.8);
+        outline-offset: 1px;
+      }
+      .error {
+        background: rgba(248, 113, 113, 0.12);
+        border-radius: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid rgba(248, 113, 113, 0.4);
+        font-size: 0.8rem;
+        color: #fecaca;
+      }
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+      }
+      .list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .list-item {
+        padding: 0.7rem 0.75rem;
+        border-radius: 0.9rem;
+        border: 1px solid rgba(51, 65, 85, 0.8);
+        background: rgba(15, 23, 42, 0.8);
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.6rem;
+        font-size: 0.9rem;
+      }
+      .clickable {
+        cursor: pointer;
+      }
+      .clickable:hover {
+        border-color: rgba(129, 140, 248, 0.8);
+      }
+      .active {
+        border-color: rgba(96, 165, 250, 0.95);
+        box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.85);
+      }
+      .full-width {
+        grid-column: 1 / -1;
+      }
+      .button-row {
+        display: flex;
+        gap: 0.75rem;
+      }
+      @media (max-width: 640px) {
+        .app-main {
+          padding: 1.5rem 1rem 3rem;
+        }
+        .app-header {
+          padding: 0.75rem 1rem;
+        }
+        .hero {
+          padding: 2.5rem 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useEffect, useContext, createContext } = React;
+      const { BrowserRouter, Routes, Route, Link, Navigate, useNavigate } = ReactRouterDOM;
+
+      // ---------- API client ----------
+      const api = axios.create({
+        baseURL: 'http://localhost:5000'
+      });
+
+      // ---------- Auth Context ----------
+      const AuthContext = createContext(null);
+
+      function AuthProvider({ children }) {
+        const [user, setUser] = useState(null);
+        const [token, setToken] = useState(null);
+        const [loading, setLoading] = useState(true);
+
+        useEffect(() => {
+          const saved = localStorage.getItem('ssh_auth');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            setUser(parsed.user);
+            setToken(parsed.token);
+            api.defaults.headers.common['Authorization'] = 'Bearer ' + parsed.token;
+          }
+          setLoading(false);
+        }, []);
+
+        const login = async (email, password) => {
+          const res = await api.post('/api/auth/login', { email, password });
+          setUser(res.data.user);
+          setToken(res.data.token);
+          api.defaults.headers.common['Authorization'] = 'Bearer ' + res.data.token;
+          localStorage.setItem('ssh_auth', JSON.stringify(res.data));
+        };
+
+        const register = async (payload) => {
+          const res = await api.post('/api/auth/register', payload);
+          setUser(res.data.user);
+          setToken(res.data.token);
+          api.defaults.headers.common['Authorization'] = 'Bearer ' + res.data.token;
+          localStorage.setItem('ssh_auth', JSON.stringify(res.data));
+        };
+
+        const logout = () => {
+          setUser(null);
+          setToken(null);
+          delete api.defaults.headers.common['Authorization'];
+          localStorage.removeItem('ssh_auth');
+        };
+
+        return (
+          <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+            {children}
+          </AuthContext.Provider>
+        );
+      }
+
+      function useAuth() {
+        return useContext(AuthContext);
+      }
+
+      // ---------- ProtectedRoute ----------
+      function ProtectedRoute({ children, roles }) {
+        const { user, loading } = useAuth();
+        if (loading) return null;
+        if (!user) return <Navigate to="/login" replace />;
+        if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
+        return children;
+      }
+
+      // ---------- Pages ----------
+      function LoginPage() {
+        const [email, setEmail] = useState('');
+        const [password, setPassword] = useState('');
+        const [error, setError] = useState('');
+        const [loading, setLoading] = useState(false);
+        const { login } = useAuth();
+        const navigate = useNavigate();
+
+        const handleSubmit = async (e) => {
+          e.preventDefault();
+          setError('');
+          setLoading(true);
+          try {
+            await login(email, password);
+            navigate('/');
+          } catch (err) {
+            setError(err.response?.data?.message || 'Login failed');
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        return (
+          <div className="card">
+            <h2>Login</h2>
+            <form onSubmit={handleSubmit} className="form">
+              <label>
+                Email
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              </label>
+              <label>
+                Password
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              </label>
+              {error && <div className="error">{error}</div>}
+              <button className="btn" disabled={loading} type="submit">
+                {loading ? 'Logging in...' : 'Login'}
+              </button>
+            </form>
+          </div>
+        );
+      }
+
+      function RegisterPage() {
+        const [form, setForm] = useState({
+          name: '',
+          email: '',
+          password: '',
+          dateOfBirth: '',
+          gender: '',
+          phone: '',
+          address: ''
+        });
+        const [error, setError] = useState('');
+        const [loading, setLoading] = useState(false);
+        const { register } = useAuth();
+        const navigate = useNavigate();
+
+        const handleChange = (e) => {
+          setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+        };
+
+        const handleSubmit = async (e) => {
+          e.preventDefault();
+          setError('');
+          setLoading(true);
+          try {
+            await register({
+              name: form.name,
+              email: form.email,
+              password: form.password,
+              profile: {
+                dateOfBirth: form.dateOfBirth,
+                gender: form.gender,
+                phone: form.phone,
+                address: form.address
+              }
+            });
+            navigate('/');
+          } catch (err) {
+            setError(err.response?.data?.message || 'Registration failed');
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        return (
+          <div className="card">
+            <h2>Register as Patient</h2>
+            <form onSubmit={handleSubmit} className="form">
+              <label>
+                Name
+                <input name="name" value={form.name} onChange={handleChange} required />
+              </label>
+              <label>
+                Email
+                <input type="email" name="email" value={form.email} onChange={handleChange} required />
+              </label>
+              <label>
+                Password
+                <input type="password" name="password" value={form.password} onChange={handleChange} required />
+              </label>
+              <label>
+                Date of birth
+                <input type="date" name="dateOfBirth" value={form.dateOfBirth} onChange={handleChange} />
+              </label>
+              <label>
+                Gender
+                <select name="gender" value={form.gender} onChange={handleChange}>
+                  <option value="">Select</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+              <label>
+                Phone
+                <input name="phone" value={form.phone} onChange={handleChange} />
+              </label>
+              <label>
+                Address
+                <input name="address" value={form.address} onChange={handleChange} />
+              </label>
+              {error && <div className="error">{error}</div>}
+              <button className="btn" disabled={loading} type="submit">
+                {loading ? 'Creating account...' : 'Register'}
+              </button>
+            </form>
+          </div>
+        );
+      }
+
+      function PatientDashboard() {
+        const [appointments, setAppointments] = useState([]);
+        const [prescriptions, setPrescriptions] = useState([]);
+        const [history, setHistory] = useState([]);
+        const [doctorId, setDoctorId] = useState('');
+        const [scheduledAt, setScheduledAt] = useState('');
+        const [notes, setNotes] = useState('');
+        const [error, setError] = useState('');
+
+        useEffect(() => {
+          const load = async () => {
+            try {
+              const [a, p, h] = await Promise.all([
+                api.get('/api/patients/appointments'),
+                api.get('/api/patients/prescriptions'),
+                api.get('/api/patients/medical-history')
+              ]);
+              setAppointments(a.data);
+              setPrescriptions(p.data);
+              setHistory(h.data);
+            } catch {
+              // ignore
+            }
+          };
+          load();
+        }, []);
+
+        const handleBook = async (e) => {
+          e.preventDefault();
+          setError('');
+          try {
+            const res = await api.post('/api/patients/appointments', {
+              doctorId,
+              scheduledAt,
+              notes
+            });
+            setAppointments((prev) => [res.data, ...prev]);
+            setDoctorId('');
+            setScheduledAt('');
+            setNotes('');
+          } catch (err) {
+            setError(err.response?.data?.message || 'Booking failed');
+          }
+        };
+
+        return (
+          <div className="grid-2">
+            <section className="card">
+              <h2>Book Appointment</h2>
+              <form onSubmit={handleBook} className="form">
+                <label>
+                  Doctor ID (ObjectId)
+                  <input value={doctorId} onChange={(e) => setDoctorId(e.target.value)} required />
+                </label>
+                <label>
+                  Date & time
+                  <input
+                    type="datetime-local"
+                    value={scheduledAt}
+                    onChange={(e) => setScheduledAt(e.target.value)}
+                    required
+                  />
+                </label>
+                <label>
+                  Notes
+                  <input value={notes} onChange={(e) => setNotes(e.target.value)} />
+                </label>
+                {error && <div className="error">{error}</div>}
+                <button className="btn" type="submit">
+                  Book
+                </button>
+              </form>
+            </section>
+
+            <section className="card">
+              <h2>My Appointments</h2>
+              <ul className="list">
+                {appointments.map((a) => (
+                  <li key={a._id} className="list-item">
+                    <div>
+                      <strong>{new Date(a.scheduledAt).toLocaleString()}</strong>
+                      <div>Status: {a.status}</div>
+                    </div>
+                    <div>Doctor: {a.doctor?.user?.name}</div>
+                  </li>
+                ))}
+                {appointments.length === 0 && <p>No appointments.</p>}
+              </ul>
+            </section>
+
+            <section className="card full-width">
+              <h2>Prescriptions</h2>
+              <ul className="list">
+                {prescriptions.map((p) => (
+                  <li key={p._id} className="list-item">
+                    <div>Doctor: {p.doctor?.user?.name}</div>
+                    <ul>
+                      {p.medications?.map((m, i) => (
+                        <li key={i}>
+                          {m.name} – {m.dosage}, {m.frequency} for {m.duration}
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+                {prescriptions.length === 0 && <p>No prescriptions.</p>}
+              </ul>
+            </section>
+
+            <section className="card full-width">
+              <h2>Medical History</h2>
+              <ul className="list">
+                {history.map((h) => (
+                  <li key={h._id} className="list-item">
+                    <div>
+                      <strong>{h.diagnosis}</strong>
+                    </div>
+                    <div>Doctor: {h.doctor?.user?.name}</div>
+                    <div>Date: {new Date(h.visitDate).toLocaleDateString()}</div>
+                    <div>{h.notes}</div>
+                  </li>
+                ))}
+                {history.length === 0 && <p>No history.</p>}
+              </ul>
+            </section>
+          </div>
+        );
+      }
+
+      function DoctorDashboard() {
+        const [appointments, setAppointments] = useState([]);
+        const [selected, setSelected] = useState(null);
+        const [status, setStatus] = useState('confirmed');
+        const [diagnosis, setDiagnosis] = useState('');
+        const [notes, setNotes] = useState('');
+        const [error, setError] = useState('');
+
+        useEffect(() => {
+          const load = async () => {
+            try {
+              const res = await api.get('/api/doctors/appointments');
+              setAppointments(res.data);
+            } catch {
+              // ignore
+            }
+          };
+          load();
+        }, []);
+
+        const updateStatus = async () => {
+          if (!selected) return;
+          setError('');
+          try {
+            const res = await api.patch(`/api/doctors/appointments/${selected._id}/status`, { status });
+            setAppointments((prev) => prev.map((a) => (a._id === res.data._id ? res.data : a)));
+          } catch (err) {
+            setError(err.response?.data?.message || 'Failed to update status');
+          }
+        };
+
+        const addDiagnosis = async () => {
+          if (!selected) return;
+          setError('');
+          try {
+            await api.post(`/api/doctors/appointments/${selected._id}/diagnosis`, {
+              diagnosis,
+              notes
+            });
+            setDiagnosis('');
+            setNotes('');
+          } catch (err) {
+            setError(err.response?.data?.message || 'Failed to add diagnosis');
+          }
+        };
+
+        const addPrescription = async () => {
+          if (!selected) return;
+          setError('');
+          try {
+            await api.post(`/api/doctors/appointments/${selected._id}/prescriptions`, {
+              medications: [
+                {
+                  name: 'Paracetamol',
+                  dosage: '500mg',
+                  frequency: '3 times/day',
+                  duration: '5 days'
+                }
+              ],
+              notes: 'After meals'
+            });
+          } catch (err) {
+            setError(err.response?.data?.message || 'Failed to add prescription');
+          }
+        };
+
+        return (
+          <div className="grid-2">
+            <section className="card">
+              <h2>My Appointments</h2>
+              <ul className="list">
+                {appointments.map((a) => (
+                  <li
+                    key={a._id}
+                    className={`list-item clickable ${selected?._id === a._id ? 'active' : ''}`}
+                    onClick={() => setSelected(a)}
+                  >
+                    <div>
+                      <strong>{new Date(a.scheduledAt).toLocaleString()}</strong>
+                    </div>
+                    <div>Patient: {a.patient?.user?.name}</div>
+                    <div>Status: {a.status}</div>
+                  </li>
+                ))}
+                {appointments.length === 0 && <p>No appointments.</p>}
+              </ul>
+            </section>
+
+            <section className="card">
+              <h2>Appointment Details</h2>
+              {selected ? (
+                <>
+                  <p>
+                    <strong>Date:</strong> {new Date(selected.scheduledAt).toLocaleString()}
+                  </p>
+                  <p>
+                    <strong>Patient:</strong> {selected.patient?.user?.name}
+                  </p>
+                  <p>
+                    <strong>Status:</strong> {selected.status}
+                  </p>
+
+                  <div className="form">
+                    <label>
+                      Update status
+                      <select value={status} onChange={(e) => setStatus(e.target.value)}>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                    </label>
+                    <button className="btn" type="button" onClick={updateStatus}>
+                      Save status
+                    </button>
+                  </div>
+
+                  <div className="form">
+                    <label>
+                      Diagnosis
+                      <input value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} />
+                    </label>
+                    <label>
+                      Notes
+                      <input value={notes} onChange={(e) => setNotes(e.target.value)} />
+                    </label>
+                    <div className="button-row">
+                      <button className="btn" type="button" onClick={addDiagnosis}>
+                        Save diagnosis
+                      </button>
+                      <button className="btn btn-outline" type="button" onClick={addPrescription}>
+                        Quick prescription
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <p>Select an appointment.</p>
+              )}
+              {error && <div className="error">{error}</div>}
+            </section>
+          </div>
+        );
+      }
+
+      function AdminDashboard() {
+        const [users, setUsers] = useState([]);
+        const [stats, setStats] = useState(null);
+        const [error, setError] = useState('');
+
+        const load = async () => {
+          try {
+            const [u, s] = await Promise.all([api.get('/api/admin/users'), api.get('/api/admin/stats')]);
+            setUsers(u.data);
+            setStats(s.data);
+          } catch (err) {
+            setError(err.response?.data?.message || 'Failed to load admin data');
+          }
+        };
+
+        useEffect(() => {
+          load();
+        }, []);
+
+        const changeRole = async (id, role) => {
+          setError('');
+          try {
+            await api.patch(`/api/admin/users/${id}/role`, { role });
+            await load();
+          } catch (err) {
+            setError(err.response?.data?.message || 'Failed to change role');
+          }
+        };
+
+        return (
+          <div className="grid-2">
+            <section className="card">
+              <h2>System Stats</h2>
+              {stats ? (
+                <ul className="list">
+                  <li className="list-item">Users: {stats.users}</li>
+                  <li className="list-item">Patients: {stats.patients}</li>
+                  <li className="list-item">Doctors: {stats.doctors}</li>
+                  <li className="list-item">Appointments: {stats.appointments}</li>
+                  <li className="list-item">Prescriptions: {stats.prescriptions}</li>
+                </ul>
+              ) : (
+                <p>Loading...</p>
+              )}
+            </section>
+
+            <section className="card">
+              <h2>Users & Roles</h2>
+              {error && <div className="error">{error}</div>}
+              <ul className="list">
+                {users.map((u) => (
+                  <li key={u._id} className="list-item">
+                    <div>
+                      <strong>{u.name}</strong>
+                      <div>{u.email}</div>
+                    </div>
+                    <select
+                      value={u.role}
+                      onChange={(e) => changeRole(u._id, e.target.value)}
+                    >
+                      <option value="patient">Patient</option>
+                      <option value="doctor">Doctor</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </li>
+                ))}
+                {users.length === 0 && <p>No users.</p>}
+              </ul>
+            </section>
+          </div>
+        );
+      }
+
+      // ---------- Layout & App ----------
+      function Layout({ children }) {
+        const { user, logout } = useAuth();
+        return (
+          <div className="app">
+            <header className="app-header">
+              <div className="logo">Smart Secure Healthcare</div>
+              <nav>
+                {user ? (
+                  <>
+                    <span className="user-pill">
+                      {user.name}
+                      <span className="role-tag">{user.role}</span>
+                    </span>
+                    <button className="btn btn-outline" type="button" onClick={logout}>
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login" className="link">
+                      Login
+                    </Link>
+                    <Link to="/register" className="link">
+                      Register
+                    </Link>
+                  </>
+                )}
+              </nav>
+            </header>
+            <main className="app-main">{children}</main>
+          </div>
+        );
+      }
+
+      function RootApp() {
+        const { user } = useAuth();
+        return (
+          <Layout>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  user ? (
+                    <Navigate to={`/${user.role}-dashboard`} replace />
+                  ) : (
+                    <div className="hero">
+                      <h1>Smart Secure Healthcare</h1>
+                      <p>Secure patient management with JWT auth and role-based access.</p>
+                      <div className="hero-actions">
+                        <Link className="btn" to="/login">
+                          Login
+                        </Link>
+                        <Link className="btn btn-outline" to="/register">
+                          Register as Patient
+                        </Link>
+                      </div>
+                    </div>
+                  )
+                }
+              />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route
+                path="/patient-dashboard"
+                element={
+                  <ProtectedRoute roles={['patient']}>
+                    <PatientDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/doctor-dashboard"
+                element={
+                  <ProtectedRoute roles={['doctor']}>
+                    <DoctorDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin-dashboard"
+                element={
+                  <ProtectedRoute roles={['admin']}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Layout>
+        );
+      }
+
+      // ---------- Render ----------
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(
+        <React.StrictMode>
+          <BrowserRouter>
+            <AuthProvider>
+              <RootApp />
+            </AuthProvider>
+          </BrowserRouter>
+        </React.StrictMode>
+      );
+    </script>
+  </body>
+</html>
